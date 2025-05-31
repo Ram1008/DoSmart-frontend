@@ -1,9 +1,6 @@
-
-// features/auth/authSlice.ts
-"use client";
+'use client';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getUser, loginRequest, signupRequest } from '../../api/authAPI';
-import type { Task } from '@/types/types';
 
 interface AuthState {
   username: string | null;
@@ -21,121 +18,107 @@ const initialState: AuthState = {
   error: null,
 };
 
-// 3) AsyncThunk: loginUser
-export const loginUser = createAsyncThunk<
-  { username: string; token: string },
-  { username: string; password: string },
-  { rejectValue: string }
->('auth/loginUser', async (creds, thunkAPI) => {
-  try {
-    const response = await loginRequest(creds.username, creds.password);
-    return response; // { username, token }
-  } catch (err) {
-    const errorMessage = (err instanceof Error && err.message) ? err.message : 'Login failed';
-    return thunkAPI.rejectWithValue(errorMessage);
+const saveToLocalStorage = (username: string, token: string) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('username', username);
+    localStorage.setItem('authToken', token);
   }
-});
+};
 
-// 4) AsyncThunk: signupUser
-export const signupUser = createAsyncThunk<
-  { username: string; token: string },
-  { username: string; password: string },
-  { rejectValue: string }
->('auth/signupUser', async (creds, thunkAPI) => {
-  try {
-    const response = await signupRequest(creds.username, creds.password);
-    return response; // { username, token }
-  } catch (err) {
-    const errorMessage = (err instanceof Error && err.message) ? err.message : 'Signup failed';
-    return thunkAPI.rejectWithValue(errorMessage);
+const removeFromLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('username');
+    localStorage.removeItem('authToken');
   }
-});
+};
 
-// 5) AsyncThunk: fetchUser → GET /api/tasks (token-authenticated) + username from localStorage
+const createAuthThunk = (
+  type: 'loginUser' | 'signupUser',
+  requestFn: typeof loginRequest | typeof signupRequest
+) =>
+  createAsyncThunk<{ username: string; token: string }, { username: string; password: string }, { rejectValue: string }>(
+    `auth/${type}`,
+    async ({ username, password }, thunkAPI) => {
+      try {
+        return await requestFn(username, password);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : `${type} failed`;
+        return thunkAPI.rejectWithValue(message);
+      }
+    }
+  );
+
+export const loginUser = createAuthThunk('loginUser', loginRequest);
+export const signupUser = createAuthThunk('signupUser', signupRequest);
+
 export const fetchUser = createAsyncThunk<
-  { username: string; token: string; tasks: Task[] },
+  { username: string; token: string },
   string,
   { rejectValue: string }
 >('auth/fetchUser', async (token, thunkAPI) => {
   try {
-    const storedUsername = window !== undefined ? localStorage.getItem('username') : '';
-    const response = await getUser(token);
-    
-    return { username: storedUsername, token, tasks: response.tasks || [] };
-    
+    const storedUsername = typeof window !== 'undefined' ? localStorage.getItem('username') : '';
+    await getUser(token);
+    return { username: storedUsername || '', token };
   } catch (err) {
-    const errorMessage = (err instanceof Error && err.message) ? err.message : 'Failed to fetch user';
-    return thunkAPI.rejectWithValue(errorMessage);
+    const message = err instanceof Error ? err.message : 'Fetch user failed';
+    return thunkAPI.rejectWithValue(message);
   }
 });
 
-// 6) Create the slice
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout: (state) => {
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('username');
-      state.username = null;
-      state.token = null;
-      state.isAuthenticated = false;
-      state.loading = false;
-      state.error = null;
+    logout: () => {
+      removeFromLocalStorage();
+      return initialState;
     },
   },
   extraReducers: (builder) => {
-    // —— LOGIN —— 
-    builder.addCase(loginUser.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(loginUser.fulfilled, (state, action) => {
+    const setAuth = (
+      state: AuthState,
+      { payload }: { payload: { username: string; token: string } }
+    ) => {
       state.loading = false;
-      state.username = action.payload.username;
-      state.token = action.payload.token;
+      state.username = payload.username;
+      state.token = payload.token;
       state.isAuthenticated = true;
-      localStorage.setItem('authToken', action.payload.token);
-      localStorage.setItem('username', action.payload.username);
-    });
-    builder.addCase(loginUser.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload ?? 'Login failed';
-    });
+      saveToLocalStorage(payload.username, payload.token);
+    };
 
-    // —— SIGNUP —— 
-    builder.addCase(signupUser.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(signupUser.fulfilled, (state, action) => {
-      state.loading = false;
-      state.username = action.payload.username;
-      state.token = action.payload.token;
-      state.isAuthenticated = true;
-      localStorage.setItem('authToken', action.payload.token);
-      localStorage.setItem('username', action.payload.username);
-    });
-    builder.addCase(signupUser.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload ?? 'Signup failed';
-    });
+    builder
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(loginUser.fulfilled, setAuth)
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? 'Login failed';
+      });
 
-    // —— FETCH USER —— 
-    builder.addCase(fetchUser.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    });
-    builder.addCase(fetchUser.fulfilled, (state, action) => {
-      state.loading = false;
-      state.username = action.payload.username;
-      state.token = action.payload.token;
-      state.isAuthenticated = true;
-    });
-    builder.addCase(fetchUser.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.payload ?? 'Failed to fetch user';
-    });
+    builder
+      .addCase(signupUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(signupUser.fulfilled, setAuth)
+      .addCase(signupUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? 'Signup failed';
+      });
+
+    builder
+      .addCase(fetchUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUser.fulfilled, setAuth)
+      .addCase(fetchUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? 'Fetch user failed';
+      });
   },
 });
 

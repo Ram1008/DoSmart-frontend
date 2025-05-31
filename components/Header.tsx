@@ -16,7 +16,6 @@ const Header = () => {
     if (typeof window !== "undefined") {
       const storedToken = localStorage.getItem("token");
       setToken(storedToken);
-
       if (!storedToken) {
         // No token → do nothing (user remains unauthenticated)
         return;
@@ -27,9 +26,6 @@ const Header = () => {
         .then((payload) => {
           localStorage.setItem("username", payload.username);
           localStorage.setItem("authToken", payload.token);
-          if (payload.tasks) {
-            localStorage.setItem("tasks", JSON.stringify(payload.tasks));
-          }
         })
         .catch(() => {
           dispatch(logout());
