@@ -10,7 +10,6 @@ import {
 } from '@/lib/api/taskAPI';
 import type { RootState } from '@/lib/store';
 
-// TasksState इंटरफ़ेस
 interface TasksState {
   tasks: Task[];
   loading: boolean;
@@ -30,8 +29,9 @@ export const loadTasks = createAsyncThunk<Task[], string, { rejectValue: string 
     try {
       const tasks = await apiFetchTasks(token);
       return tasks;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
+    } catch (err) {
+      const errorMessage = (err instanceof Error) ? err.message : 'Failed to load tasks';
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -47,8 +47,9 @@ export const addNewTask = createAsyncThunk<
     try {
       const newTask = await apiCreateTask(token, payload);
       return newTask;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
+    } catch (err) {
+      const errorMessage = (err instanceof Error) ? err.message : 'Failed to add task';
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -62,8 +63,9 @@ export const editTask = createAsyncThunk<
   try {
     const updatedTask = await apiUpdateTask(token, taskId, updatedFields);
     return updatedTask;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message);
+  } catch (err) {
+    const errorMessage = (err instanceof Error) ? err.message : 'Failed to edit task';
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -76,8 +78,9 @@ export const editTaskStatus = createAsyncThunk<
   try {
     const updatedTask = await apiUpdateTaskStatus(token, taskId, newStatus);
     return updatedTask;
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message);
+  } catch (err) {
+    const errorMessage = (err instanceof Error) ? err.message : 'Failed to update task status';
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -87,9 +90,10 @@ export const removeTask = createAsyncThunk<string, { token: string; taskId: stri
   async ({ token, taskId }, thunkAPI) => {
     try {
       await apiDeleteTask(token, taskId);
-      return taskId; // सफलता पर taskId वापस
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.message);
+      return taskId; 
+    } catch (err) {
+      const errorMessage = (err instanceof Error) ? err.message : 'Failed to delete task';
+      return thunkAPI.rejectWithValue(errorMessage);
     }
   }
 );
@@ -98,7 +102,7 @@ const tasksSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
-    // setTasks तभी इस्तेमाल होगा जब आप किसी अन्य थंक/एक्शन से मनमाफ़िक लोड करना चाहें
+    
     setTasks: (state, action: PayloadAction<Task[]>) => {
       state.tasks = action.payload;
     },

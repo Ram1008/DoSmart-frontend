@@ -1,19 +1,6 @@
 // api/authAPI.ts
 import type { Task } from '@/types/types';
 
-interface AuthResponse {
-  token: string;
-}
-
-interface RegisterResponse {
-  message: string;
-  user: {
-    id: string;
-    username: string;
-    created_at: string;
-  };
-}
-
 interface LoginResponse {
   message: string;
   token: string;
@@ -21,20 +8,11 @@ interface LoginResponse {
 
 interface UserResponse {
   tasks: Task[];
-  // यदि बैकएंड में कभी /auth/me लौटाएगा, तो यहाँ और फील्ड्स जोड़ सकते हैं
 }
 
 // NOTE: replace this with your actual backend base URL
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-/**
- * Signup Request (POST /api/auth/register)
- * Body: { username, password }
- * Response: { message, user: { id, username, created_at } }
- * Return: { username, token }
- *
- * हम signup के बाद सीधे login कर रहे हैं ताकि token मिल जाए
- */
 export async function signupRequest(
   username: string,
   password: string
@@ -49,9 +27,8 @@ export async function signupRequest(
     const errorBody = await res.json();
     throw new Error(errorBody.error || 'Signup failed');
   }
-  await res.json(); // हमें सिर्फ message देखना था, आगे login करेंगे
-
-  // 2) तुरंत Login API call करके token ले लें
+  await res.json(); 
+  
   const loginRes = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

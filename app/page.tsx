@@ -1,4 +1,4 @@
-// app/page.tsx
+
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -24,9 +24,12 @@ const Home: React.FC = () => {
       try {
         const fetched = await fetchTasks(token);
         setTasks(fetched);
-      } catch (err: any) {
-        console.error('Error fetching tasks:', err.message);
-        // Optionally, you could handle errors by redirecting or showing a message
+      } catch (err) {
+        if (err instanceof Error) {
+          console.error('Error fetching tasks:', err.message);
+        } else {
+          console.error('Error fetching tasks:', err);
+        }
       }
     };
 
@@ -36,7 +39,7 @@ const Home: React.FC = () => {
   return (
     <div className="w-full h-full px-2 md:px-10 py-4">
       <section className="md:col-span-4">
-        <CreateTask tasks={tasks} setTasks={setTasks} />
+        <CreateTask setTasks={setTasks} />
         <TaskStatus tasks={tasks} setTasks={setTasks} />
       </section>
     </div>

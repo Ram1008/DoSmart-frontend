@@ -1,9 +1,8 @@
 // features/auth/authSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getUser, loginRequest, signupRequest } from '../../api/authAPI';
 import type { Task } from '@/types/types';
 
-// 1) AuthState इंटरफ़ेस
 interface AuthState {
   username: string | null;
   token: string | null;
@@ -12,7 +11,6 @@ interface AuthState {
   error: string | null;
 }
 
-// 2) Initial State
 const initialState: AuthState = {
   username: null,
   token: null,
@@ -30,8 +28,9 @@ export const loginUser = createAsyncThunk<
   try {
     const response = await loginRequest(creds.username, creds.password);
     return response; // { username, token }
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message);
+  } catch (err) {
+    const errorMessage = (err instanceof Error && err.message) ? err.message : 'Login failed';
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -44,8 +43,9 @@ export const signupUser = createAsyncThunk<
   try {
     const response = await signupRequest(creds.username, creds.password);
     return response; // { username, token }
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.message);
+  } catch (err) {
+    const errorMessage = (err instanceof Error && err.message) ? err.message : 'Signup failed';
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -56,15 +56,14 @@ export const fetchUser = createAsyncThunk<
   { rejectValue: string }
 >('auth/fetchUser', async (token, thunkAPI) => {
   try {
-    // 5.1) लोकल स्टोरेज से username पढ़ें (login/signup के दौरान सेट हुआ होगा)
+    
     const storedUsername = localStorage.getItem('username') || '';
-    // 5.2) getUser में हमने /api/tasks+username logic रखा है
     const response = await getUser(token);
-    // response: { username, tasks }
-    // 5.3) अगर बैकएंड ने रीडिस्पैचिंग के समय नया token भेजा हो, तो response.token यूज़रिंग करें
+    
     return { username: storedUsername, token, tasks: response.tasks || [] };
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue('Failed to fetch user');
+  } catch (err) {
+    const errorMessage = (err instanceof Error && err.message) ? err.message : 'Failed to fetch user';
+    return thunkAPI.rejectWithValue(errorMessage);
   }
 });
 
@@ -73,7 +72,6 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // 6.1) Logout → लोकल स्टोरेज + Redux state क्लियर
     logout: (state) => {
       localStorage.removeItem('authToken');
       localStorage.removeItem('username');

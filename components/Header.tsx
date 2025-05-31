@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { User } from "lucide-react";
-import { useAppDispatch, useAppSelector } from "../lib/hooks";
+import { useAppDispatch } from "../lib/hooks";
 import { fetchUser, logout } from "../lib/features/auth/authSlice";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -12,51 +12,33 @@ const Header = () => {
   
     const token = localStorage.getItem("token");
   useEffect(() => {
-    // 1. Check if a token is already saved in localStorage
     
     if (!token) {
       // No token → do nothing (user remains unauthenticated)
       return;
     }
 
-    // 2. If token exists, dispatch fetchUser(token)
-    //    fetchUser should validate the token, pull user + tasks from the backend,
-    //    and store them in Redux (and also return them so we can mirror into localStorage).
     dispatch(fetchUser(token))
-      .unwrap() // unwrap to get either a thrown error or the payload
+      .unwrap() 
       .then((payload) => {
-        // payload is whatever your fetchUser thunk returned, e.g.:
-        // { username: string; token: string; tasks: Task[]; }
-
-        // (a) Mirror username into localStorage
         localStorage.setItem("username", payload.username);
-
-        // (b) Mirror token into localStorage (in case backend returned a refreshed token)
         localStorage.setItem("authToken", payload.token);
-
-        // (c) Mirror tasks into localStorage (so tasks persist across reload)
-        //     if your payload includes tasks
         if (payload.tasks) {
           localStorage.setItem("tasks", JSON.stringify(payload.tasks));
         }
       })
       .catch(() => {
-        // If fetchUser fails (e.g. invalid/expired token), do nothing
-        // or optionally force a logout:
         dispatch(logout());
       });
   }, [dispatch]);
 
   const handleLogout = () => {
-    // 1. Remove everything from localStorage
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     localStorage.removeItem("tasks");
 
-    // 2. Clear Redux auth state
     dispatch(logout());
 
-    // 3. Redirect to /login
     router.push("/login");
   };
 

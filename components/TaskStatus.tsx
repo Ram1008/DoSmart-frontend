@@ -13,8 +13,6 @@ interface TaskStatusProps {
 }
 
 const TaskStatus: React.FC<TaskStatusProps> = ({ tasks, setTasks }) => {
-  const [quickTask, setQuickTask] = useState('');
-  const [useModal, setUseModal] = useState(false);
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;

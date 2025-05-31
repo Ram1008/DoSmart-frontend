@@ -8,11 +8,10 @@ import { useAppSelector } from '@/lib/hooks';
 import { createTask as apiCreateTask } from '@/lib/api/taskAPI';
 
 interface CreateTaskProps {
-  tasks: Task[];
   setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
 }
 
-const CreateTask: React.FC<CreateTaskProps> = ({ tasks, setTasks }) => {
+const CreateTask: React.FC<CreateTaskProps> = ({setTasks }) => {
   const [quickTask, setQuickTask] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -26,8 +25,12 @@ const CreateTask: React.FC<CreateTaskProps> = ({ tasks, setTasks }) => {
       // Call API with { type: 'simple', textInput }
       const created: Task = await apiCreateTask(token, { type: 'simple', textInput });
       setTasks((prev) => [created, ...prev]);
-    } catch (err: any) {
-      console.error('Error creating quick task:', err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error('Error creating quick task:', err.message);
+      } else {
+        console.error('Error creating quick task:', err);
+      }
     }
   };
 
@@ -56,8 +59,12 @@ const CreateTask: React.FC<CreateTaskProps> = ({ tasks, setTasks }) => {
       // Call API with { type: 'custom', ...customPayload }
       const created: Task = await apiCreateTask(token, { type: 'custom', ...customPayload });
       setTasks((prev) => [created, ...prev]);
-    } catch (err: any) {
-      console.error('Error creating custom task:', err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        console.error('Error creating custom task:', err.message);
+      } else {
+        console.error('Error creating custom task:', err);
+      }
     }
   };
 
