@@ -53,8 +53,12 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     try {
       await dispatch(editTask({ token, taskId: task.id, updatedFields })).unwrap();
       setIsEditing(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(
+        err && typeof err === 'object' && 'message' in err
+          ? String((err as { message: unknown }).message)
+          : 'An error occurred'
+      );
     }
   };
 
