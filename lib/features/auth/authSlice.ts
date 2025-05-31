@@ -1,4 +1,6 @@
+
 // features/auth/authSlice.ts
+"use client";
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getUser, loginRequest, signupRequest } from '../../api/authAPI';
 import type { Task } from '@/types/types';
