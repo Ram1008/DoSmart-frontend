@@ -1,8 +1,8 @@
 "use client";
 import React from 'react';
-import { Droppable } from 'react-beautiful-dnd';
+import { Droppable } from '@hello-pangea/dnd';
 import TaskCard from './TaskCard';
-import { Task } from '@/types/task';
+import { Task } from '@/types/types';
 
 interface TaskBucketProps {
   title: string;

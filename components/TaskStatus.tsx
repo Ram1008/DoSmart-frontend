@@ -2,7 +2,7 @@
 
 import TaskBucket from './TaskBucket';
 import React from "react";
-import { DragDropContext, DropResult } from 'react-beautiful-dnd';
+import { DragDropContext, DropResult } from '@hello-pangea/dnd';
 import { Task } from '@/types/types';
 
 

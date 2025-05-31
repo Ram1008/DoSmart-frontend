@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Draggable } from 'react-beautiful-dnd';
+import { Draggable } from '@hello-pangea/dnd';
 import { useAppDispatch, useAppSelector } from '@/lib/hooks';
 import { editTask, removeTask } from '@/lib/features/tasks/tasksSlice';
 import type { Task } from '@/types/types';
@@ -113,7 +113,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                 <label className="block text-sm font-medium">Status</label>
                 <select
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  onChange={(e) => setStatus(e.target.value as Task['status'])}
                   className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="ongoing">Ongoing Task</option>
