@@ -58,11 +58,11 @@ export const fetchUser = createAsyncThunk<
   { rejectValue: string }
 >('auth/fetchUser', async (token, thunkAPI) => {
   try {
-    
-    const storedUsername = localStorage.getItem('username') || '';
+    const storedUsername = window !== undefined ? localStorage.getItem('username') : '';
     const response = await getUser(token);
     
     return { username: storedUsername, token, tasks: response.tasks || [] };
+    
   } catch (err) {
     const errorMessage = (err instanceof Error && err.message) ? err.message : 'Failed to fetch user';
     return thunkAPI.rejectWithValue(errorMessage);

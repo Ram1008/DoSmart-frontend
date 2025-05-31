@@ -9,37 +9,44 @@ import Link from "next/link";
 const Header = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  
-    const token = localStorage.getItem("token");
-  useEffect(() => {
-    
-    if (!token) {
-      // No token → do nothing (user remains unauthenticated)
-      return;
-    }
 
-    dispatch(fetchUser(token))
-      .unwrap() 
-      .then((payload) => {
-        localStorage.setItem("username", payload.username);
-        localStorage.setItem("authToken", payload.token);
-        if (payload.tasks) {
-          localStorage.setItem("tasks", JSON.stringify(payload.tasks));
-        }
-      })
-      .catch(() => {
-        dispatch(logout());
-      });
+  const [token, setToken] = React.useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedToken = localStorage.getItem("token");
+      setToken(storedToken);
+
+      if (!storedToken) {
+        // No token → do nothing (user remains unauthenticated)
+        return;
+      }
+
+      dispatch(fetchUser(storedToken))
+        .unwrap()
+        .then((payload) => {
+          localStorage.setItem("username", payload.username);
+          localStorage.setItem("authToken", payload.token);
+          if (payload.tasks) {
+            localStorage.setItem("tasks", JSON.stringify(payload.tasks));
+          }
+        })
+        .catch(() => {
+          dispatch(logout());
+        });
+    }
   }, [dispatch]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
-    localStorage.removeItem("tasks");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
+      localStorage.removeItem("tasks");
 
-    dispatch(logout());
+      dispatch(logout());
 
-    router.push("/login");
+      router.push("/login");
+    }
   };
 
   return (
