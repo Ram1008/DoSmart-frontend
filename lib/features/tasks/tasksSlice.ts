@@ -163,7 +163,7 @@ const tasksSlice = createSlice({
     });
     builder.addCase(removeTask.fulfilled, (state, action) => {
       state.loading = false;
-      state.tasks = state.tasks.filter((task) => task.id !== action.payload.id);
+      state.tasks = state.tasks.filter((task) => task.id !== action.payload);
     });
     builder.addCase(removeTask.rejected, (state, action) => {
       state.loading = false;
