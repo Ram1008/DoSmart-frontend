@@ -70,7 +70,7 @@ export async function loginRequest(
  * Response: { tasks: Task[] }
  */
 export async function getUser(token: string): Promise<{ tasks: Task[] }> {
-  const res = await fetch(`${BASE_URL}/tasks`, {
+  const res = await fetch(`${BASE_URL}/task`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

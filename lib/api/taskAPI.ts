@@ -44,7 +44,7 @@ export async function createTask(
     | { type: 'simple'; textInput: string }
     | ({ type: 'custom' } & TaskInput)
 ): Promise<Task> {
-  const res = await fetch(`${BASE_URL}/tasks`, {
+  const res = await fetch(`${BASE_URL}/task`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
