@@ -1,4 +1,3 @@
-// types.ts
 export interface Task {
   id: string;
   user_id: string;
@@ -14,7 +13,7 @@ export interface Task {
 export interface TaskInput {
   title: string;
   description?: string | null;
-  start_time?: string;   // ISO 8601 UTC (यदि पसंद हो तो nullable)
+  start_time?: string;   // ISO 8601 UTC 
   deadline: string;      // ISO 8601 UTC
   status?: 'Upcoming Task' | 'Ongoing Task' | 'Failed Task' | 'Successful Task' | undefined;
 }

@@ -14,10 +14,8 @@ interface CreateTaskProps {
 const CreateTask: React.FC<CreateTaskProps> = ({setTasks }) => {
   const [quickTask, setQuickTask] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-
   const { token } = useAppSelector((state) => state.auth);
 
-  // Handler for quick (simple) tasks
   const handleQuickSubmit = async (textInput: string) => {
     if (!token) return;
 
@@ -44,10 +42,6 @@ const CreateTask: React.FC<CreateTaskProps> = ({setTasks }) => {
   }) => {
     if (!token) return;
 
-    // Build TaskInput for API (TaskInput = { title, description?, start_time?, deadline, status? })
-    // Map status to TaskInput status type
-    
-
     const customPayload: TaskInput = {
       title: payload.title,
       description: payload.description,
@@ -56,7 +50,6 @@ const CreateTask: React.FC<CreateTaskProps> = ({setTasks }) => {
     };
 
     try {
-      // Call API with { type: 'custom', ...customPayload }
       const created: Task = await apiCreateTask(token, { type: 'custom', ...customPayload });
       setTasks((prev) => [created, ...prev]);
     } catch (err) {

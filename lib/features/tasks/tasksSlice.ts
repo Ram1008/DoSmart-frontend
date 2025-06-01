@@ -1,5 +1,3 @@
-// lib/features/tasks/tasksSlice.ts
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { Task, TaskInput } from '@/types/types';
 import {
@@ -23,7 +21,6 @@ const initialState: TasksState = {
   error: null,
 };
 
-// 1) Thunk: loadTasks → GET /api/tasks
 export const loadTasks = createAsyncThunk<Task[], string, { rejectValue: string }>(
   'tasks/loadTasks',
   async (token, thunkAPI) => {
@@ -37,7 +34,6 @@ export const loadTasks = createAsyncThunk<Task[], string, { rejectValue: string 
   }
 );
 
-// 2) Thunk: addNewTask → POST /api/tasks (Simple or Custom)
 export const addNewTask = createAsyncThunk<
   Task,
   { token: string; payload: { type: 'simple'; textInput: string } | ({ type: 'custom' } & TaskInput) },
@@ -55,7 +51,6 @@ export const addNewTask = createAsyncThunk<
   }
 );
 
-// 3) Thunk: editTask → PUT /api/tasks/:id
 export const editTask = createAsyncThunk<
   Task,
   { token: string; taskId: string; updatedFields: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>> },
@@ -70,7 +65,6 @@ export const editTask = createAsyncThunk<
   }
 });
 
-// 4) Thunk: editTaskStatus → PATCH /api/tasks/:id/status
 export const editTaskStatus = createAsyncThunk<
   Task,
   { token: string; taskId: string; newStatus: string },
@@ -109,7 +103,6 @@ const tasksSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // —— loadTasks —— 
     builder.addCase(loadTasks.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -123,7 +116,6 @@ const tasksSlice = createSlice({
       state.error = action.payload ?? 'Failed to load tasks';
     });
 
-    // —— addNewTask —— 
     builder.addCase(addNewTask.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -137,7 +129,6 @@ const tasksSlice = createSlice({
       state.error = action.payload ?? 'Failed to add task';
     });
 
-    // —— editTask —— 
     builder.addCase(editTask.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -152,7 +143,6 @@ const tasksSlice = createSlice({
       state.error = action.payload ?? 'Failed to edit task';
     });
 
-    // —— editTaskStatus —— 
     builder.addCase(editTaskStatus.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -167,14 +157,13 @@ const tasksSlice = createSlice({
       state.error = action.payload ?? 'Failed to update task status';
     });
 
-    // —— removeTask —— 
     builder.addCase(removeTask.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(removeTask.fulfilled, (state, action) => {
       state.loading = false;
-      state.tasks = state.tasks.filter((t) => t.id !== action.payload);
+      state.tasks = state.tasks.filter((task) => task.id !== action.payload.id);
     });
     builder.addCase(removeTask.rejected, (state, action) => {
       state.loading = false;
@@ -186,5 +175,4 @@ const tasksSlice = createSlice({
 export const { setTasks } = tasksSlice.actions;
 export default tasksSlice.reducer;
 
-// Optional selector
 export const selectAllTasks = (state: RootState) => state.tasks.tasks;

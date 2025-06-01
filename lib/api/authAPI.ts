@@ -1,4 +1,3 @@
-// api/authAPI.ts
 import type { Task } from '@/types/types';
 
 interface LoginResponse {
@@ -10,14 +9,12 @@ interface UserResponse {
   tasks: Task[];
 }
 
-// NOTE: replace this with your actual backend base URL
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export async function signupRequest(
   username: string,
   password: string
 ): Promise<{ username: string; token: string }> {
-  // 1) Register API call
   const res = await fetch(`${BASE_URL}/auth/register`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -42,11 +39,6 @@ export async function signupRequest(
   return { username, token: loginData.token };
 }
 
-/**
- * Login Request (POST /api/auth/login)
- * Body: { username, password }
- * Response: { message, token }
- */
 export async function loginRequest(
   username: string,
   password: string
@@ -64,11 +56,6 @@ export async function loginRequest(
   return { username, token: data.token };
 }
 
-/**
- * Get User Info + Tasks
- * Calls GET /api/tasks with Authorization header
- * Response: { tasks: Task[] }
- */
 export async function getUser(token: string): Promise<{ tasks: Task[] }> {
   const res = await fetch(`${BASE_URL}/task`, {
     method: 'GET',

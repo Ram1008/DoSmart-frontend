@@ -17,7 +17,6 @@ const Header = () => {
       const storedToken = localStorage.getItem("token");
       setToken(storedToken);
       if (!storedToken) {
-        // No token → do nothing (user remains unauthenticated)
         return;
       }
 

@@ -1,4 +1,3 @@
-// components/TaskCard.tsx
 'use client';
 
 import React, { useState } from 'react';
@@ -16,15 +15,10 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
   const dispatch = useAppDispatch();
   const { token } = useAppSelector((state) => state.auth);
-
   const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState(task.title);
-  const [description, setDescription] = useState(task.description ?? '');
-  const [status, setStatus] = useState(task.status);
-  const [deadline, setDeadline] = useState(task.deadline);
+  const [currentTask, setCurrentTask] = useState<Task>(task);
   const [error, setError] = useState<string | null>(null);
 
-  // Format date/time for display
   const formatDateTime = (iso: string) => {
     try {
       return format(new Date(iso), 'PPpp');
@@ -42,16 +36,19 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
     e.preventDefault();
     if (!token) return;
 
-    // Build updatedFields partial
+    const { title, description, status, deadline } = currentTask;
     const updatedFields: Partial<Omit<Task, 'id' | 'user_id' | 'created_at' | 'updated_at'>> = {
       title: title.trim(),
-      description: description.trim() || null,
+      description: description?.trim() || null,
       status,
       deadline,
     };
 
     try {
-      await dispatch(editTask({ token, taskId: task.id, updatedFields })).unwrap();
+      const response = await dispatch(
+        editTask({ token, taskId: task.id, updatedFields })
+      ).unwrap();
+      setCurrentTask(response);
       setIsEditing(false);
     } catch (err) {
       setError(
@@ -81,8 +78,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                 <label className="block text-sm font-medium">Title</label>
                 <input
                   type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={currentTask.title}
+                  onChange={(e) =>
+                    setCurrentTask({ ...currentTask, title: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -91,8 +90,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
               <div>
                 <label className="block text-sm font-medium">Description</label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={currentTask.description ?? ''}
+                  onChange={(e) =>
+                    setCurrentTask({ ...currentTask, description: e.target.value })
+                  }
                   className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   rows={3}
                 />
@@ -102,8 +103,13 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                 <label className="block text-sm font-medium">Deadline</label>
                 <input
                   type="datetime-local"
-                  value={new Date(deadline).toISOString().slice(0, 16)}
-                  onChange={(e) => setDeadline(new Date(e.target.value).toISOString())}
+                  value={new Date(currentTask.deadline).toISOString().slice(0, 16)}
+                  onChange={(e) =>
+                    setCurrentTask({
+                      ...currentTask,
+                      deadline: new Date(e.target.value).toISOString(),
+                    })
+                  }
                   className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -112,26 +118,34 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
               <div>
                 <label className="block text-sm font-medium">Status</label>
                 <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value as Task['status'])}
+                  value={currentTask.status}
+                  onChange={(e) =>
+                    setCurrentTask({
+                      ...currentTask,
+                      status: e.target.value as Task['status'],
+                    })
+                  }
                   className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <option value="ongoing">Ongoing Task</option>
-                  <option value="success">Successful Task</option>
-                  <option value="failure">Failed Task</option>
+                  <option value="Ongoing Task">Ongoing Task</option>
+                  <option value="Successful Task">Successful Task</option>
+                  <option value="Failed Task">Failed Task</option>
+                  <option value="Upcoming Task">Upcoming Task</option>
                 </select>
               </div>
 
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setIsEditing(false);
+                    setCurrentTask(task); // reset to original on cancel
+                  }}
                   className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
                 >
                   Cancel
                 </button>
                 <button
-                onClick={(e) => handleEditSave(e)}
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
@@ -142,7 +156,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
           ) : (
             <div className="space-y-2">
               <div className="flex justify-between items-start">
-                <h4 className="text-lg font-semibold">{task.title}</h4>
+                <h4 className="text-lg font-semibold">{currentTask.title}</h4>
                 <div className="flex space-x-2">
                   <button
                     onClick={() => setIsEditing(true)}
@@ -161,33 +175,31 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, index }) => {
                 </div>
               </div>
 
-              {task.description && (
-                <p className="text-gray-600 text-sm">{task.description}</p>
+              {currentTask.description && (
+                <p className="text-gray-600 text-sm">{currentTask.description}</p>
               )}
 
               <p className="text-gray-500 text-xs">
                 <strong>Start: </strong>
-                {formatDateTime(task.start_time)}
+                {formatDateTime(currentTask.start_time)}
               </p>
               <p className="text-gray-500 text-xs">
                 <strong>Deadline: </strong>
-                {formatDateTime(task.deadline)}
+                {formatDateTime(currentTask.deadline)}
               </p>
-              <p
+              <span
                 className={`inline-block px-2 py-1 text-xs font-semibold rounded ${
-                  task.status === 'Successful Task'
+                  currentTask.status === 'Successful Task'
                     ? 'bg-green-100 text-green-800'
-                    : task.status === 'Failed Task'
+                    : currentTask.status === 'Failed Task'
                     ? 'bg-red-100 text-red-800'
+                    : currentTask.status === 'Upcoming Task'
+                    ? 'bg-blue-100 text-blue-800'
                     : 'bg-yellow-100 text-yellow-800'
                 }`}
               >
-                {task.status === 'Ongoing Task'
-                  ? 'Ongoing Task'
-                  : task.status === 'Successful Task'
-                  ? 'Successful Task'
-                  : 'Failed Task'}
-              </p>
+                {currentTask.status}
+              </span>
             </div>
           )}
         </div>

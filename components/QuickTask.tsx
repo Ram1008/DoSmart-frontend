@@ -1,5 +1,6 @@
 'use client';
 
+import { Mic } from 'lucide-react';
 import React from 'react';
 
 interface QuickTaskProps {
@@ -7,7 +8,7 @@ interface QuickTaskProps {
   setQuickTask: (val: string) => void;
   isModalOpen: boolean;
   setIsModalOpen: (open: boolean) => void;
-  onQuickSubmit: (textInput: string) => void; // callback for parent
+  onQuickSubmit: (textInput: string) => void; 
 }
 
 const QuickTask: React.FC<QuickTaskProps> = ({
@@ -19,14 +20,10 @@ const QuickTask: React.FC<QuickTaskProps> = ({
 }) => {
   return (
     <div className="relative w-full mb-4">
-      <textarea
-        value={quickTask}
-        onChange={(e) => setQuickTask(e.target.value)}
-        placeholder="Start typing your task here..."
-        className="w-full border border-gray-300 h-[100px] rounded-lg p-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-      />
-      {/* Toggle for opening custom modal */}
-      <div className="absolute top-4 right-3">
+      <button className="absolute top-16 left-4 focus:outline-none">
+        <Mic />
+      </button>
+      <div className="absolute top-17 left-12">
         <label className="inline-flex items-center cursor-pointer">
           <input
             type="checkbox"
@@ -39,23 +36,12 @@ const QuickTask: React.FC<QuickTaskProps> = ({
           </div>
         </label>
       </div>
-      {/* Mic icon (decorative) */}
-      <button className="absolute bottom-2 right-3 focus:outline-none">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 text-gray-500"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 1v11m0 0a3 3 0 01-3-3V8a3 3 0 016 0v1a3 3 0 01-3 3zm-3 2v2a3 3 0 006 0v-2"
-          />
-        </svg>
-      </button>
+      <textarea
+        value={quickTask}
+        onChange={(e) => setQuickTask(e.target.value)}
+        placeholder="Start typing your task here..."
+        className="w-full border border-gray-300 h-[100px] rounded-lg p-4 pr-12 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+      />
       <button
         onClick={() => {
           if (quickTask.trim()) {

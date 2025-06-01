@@ -1,4 +1,4 @@
-// components/Form.tsx
+
 'use client';
 
 import React, { useState, useEffect, FormEvent } from 'react';
@@ -18,7 +18,6 @@ const Form: React.FC<FormProps> = ({ mode }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (!loading && isAuthenticated) {
       router.replace('/dashboard');

@@ -9,7 +9,6 @@ export default function SignupPage() {
   const router = useRouter();
   const { isAuthenticated, loading } = useAppSelector((state) => state.auth);
 
-  // If already authenticated (or in the middle of loading), redirect to /dashboard
   useEffect(() => {
     if (!loading && isAuthenticated) {
       router.replace('/');
